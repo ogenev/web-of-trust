@@ -1,19 +1,33 @@
-pragma solidity >=0.8.3 <0.9.0;
+// SPDX-License-Identifier: MIT
+
+pragma solidity >=0.8.0 <0.9.0;
 
 contract TrustStore {
-    struct Profile {
-        address identity;
+
+    bytes32 hashSum;
+    bytes32 newHash;
+    address issuer;
+
+    event LogAddCertification(
+        address subject,
+        address issuer,
+        bytes32 level
+    );
+
+    function getHashSum() public view returns (bytes32) {
+        return hashSum;
     }
 
-    struct Certification {
-        Profile subject;
-        Profile issuer;
-        string level;
-    }
+    function addCertification(
+         address subject,
+         bytes32 level
+    )
+    public returns (bytes32 recordHash) {
+        issuer = msg.sender;
+        newHash = keccak256(abi.encode(subject, issuer, level));
+        hashSum = keccak256(abi.encode(hashSum, newHash));
 
-    string[4] levels;
-
-    constructor() public {
-        levels = ['none', "don't care", 'good', 'best'];
+        emit LogAddCertification(subject, issuer, level);
+        return newHash;
     }
 }
